@@ -11,7 +11,7 @@ file in the root of the project: `web_scraping` (not `javascript` or `python`).
 
 <pre>
 └───Web_Scraping
-    │   <mark><b>.env</b></mark>
+    │   >>> <mark><b><u>.env</u></b></mark> <<<
     │   .gitignore
     │   README.md
     │
