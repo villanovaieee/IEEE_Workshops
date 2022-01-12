@@ -92,7 +92,6 @@ void setTime(uint8_t t) {
   }
 
   watchState = 0;
-  prevTime = millis();
 }
 
 void changeHour(uint8_t* p) {
