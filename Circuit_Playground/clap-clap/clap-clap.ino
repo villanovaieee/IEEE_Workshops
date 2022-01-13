@@ -9,7 +9,7 @@ uint8_t clapState = 0;
 uint8_t active = 0;
 uint32_t samples = 100;
 uint32_t minDeltaMs = 250; // minimum time to pass before next clap
-uint32_t maxDeltaMs = 2000; // maximum time to pass before reset
+uint32_t maxDeltaMs = 1000; // maximum time to pass before reset
 uint32_t clapOneTime = 0;
 uint32_t clapTwoTime = 0;
 
@@ -58,8 +58,13 @@ void loop() {
     clapState = 0;
   }
 
-//  if(active) {
-//    // claps worked
-//  }
-  CircuitPlayground.redLED(active);
+  if(active) {
+    // claps worked
+    for (int i =0; i<10; i++) {
+      CircuitPlayground.setPixelColor(i, CircuitPlayground.colorWheel(255));
+    }
+  }
+  else {
+    CircuitPlayground.clearPixels();
+  }
 }
