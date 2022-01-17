@@ -21,9 +21,11 @@ the IEEE_Workshops library. If not, see <https://www.gnu.org/licenses/>.
 import smtplib
 import os
 import re
+import json
 import requests
 import asyncio
 from time import gmtime, strftime
+from urllib.parse import urlencode
 # from dotenv import load_dotenv
 from email.message import EmailMessage
 from bs4 import BeautifulSoup
@@ -47,11 +49,20 @@ async def main():
     """
     Extract and email pertinent info from an Amazon wishlist
     """
-    html = await fetchGoog() #fetchTravelocity()
+    # html = await fetchGoog("Philadelphia", "New Orleans", "2022-01-24", "2022-02-24") #fetchTravelocity()
+    response = requests.get('https://www.google.com/travel/flights/search?tfs=CBwQAhooagwIAhIIL20vMGRjbGcSCjIwMjItMDEtMzFyDAgDEggvbS8wZjJ0ahooagwIAxIIL20vMGYydGoSCjIwMjItMDItMjRyDAgCEggvbS8wZGNsZ3ABggELCP___________wFAAUgBmAEB&tfu=EgYIAhABGAA')
+    start = response.content.decode('utf-8').find('role="list">')
+    soup = BeautifulSoup(response.content, 'html.parser')
+    listings = soup.find_all('div', {'role': 'list'})
+    print(soup.prettify()[start:start+100000])
+    print(start)
     # print(html)
 
     # soup = BeautifulSoup(html, 'html.parser')
     # data = []
+
+    # listings = soup.find_all('div', {'role': 'list'})
+    # print(soup.prettify())
 
     # listings = soup.find_all('ul')
     # print(len(listings))
@@ -83,7 +94,7 @@ async def fetchHtml():
         raise Exception("Bad request")
     return response.text
 
-async def fetchGoog():
+async def fetchGoog(fLocation: str, tLocation: str, fDate: str, rDate: str):
     q = {
         "rpcids": "H028ib",
         "f.sid": "3524935585383552279",
@@ -96,41 +107,72 @@ async def fetchGoog():
         "rt": "c"
     }
 
+    # must use a "raw" string so that the back slashes are included in the encoding and not escaped
+    fDataStr = r'[[["H028ib","[\"{location}\",[1,2,3,5,4],null,[1,1],1]",null,"generic"]]]'
+
     fData = {
-        "f.req": '[[["H028ib","[\"New Orlean\",[1,2,3,5,4],null,[1,1],1]",null,"generic"]]]',
-        'at': 'ABrGKkR9jw_HA1rHlyy2lgzwGXA8:1642224490509',
+        "f.req": fDataStr.format(location=fLocation),
     }
 
     headers = {
-        "accept": "*/*",
-        "accept-encoding": "gzip, deflate, br",
-        "accept-language": "en-US,en;q=0.9",
         "content-type": "application/x-www-form-urlencoded;charset=UTF-8",
-        # "cookie": "CONSENT=YES+US.en+201909; ANID=AHWqTUkH25er2oRz7Qcv9QhEm7B170WryLgqXSYz9L9GucunPMeM9Z-Lecjp2vik; OGPC=19023976-1:19022591-1:19026101-2:; SID=FQjvKLM7qABJr8WfJfkKOVkeQ2RviQdXhhqbmEJtaSZhYMNHqfFBfXeEe-XXKL7NTZPIKw.; __Secure-1PSID=FQjvKLM7qABJr8WfJfkKOVkeQ2RviQdXhhqbmEJtaSZhYMNHNNjQIAgJSWc_fOelUISUHQ.; __Secure-3PSID=FQjvKLM7qABJr8WfJfkKOVkeQ2RviQdXhhqbmEJtaSZhYMNHhuJCcOylpcOoAcBp6U3HXA.; HSID=AM3NaqYaPI7bflRHy; SSID=AR3DOh58hzP_RDJDl; APISID=RyI_-tEolq_miDkK/Axw9rZjnmH-CqfbZb; SAPISID=Zyn6B3aZyvcA7qS8/Are23evT-vAdD3ppA; __Secure-1PAPISID=Zyn6B3aZyvcA7qS8/Are23evT-vAdD3ppA; __Secure-3PAPISID=Zyn6B3aZyvcA7qS8/Are23evT-vAdD3ppA; OTZ=6317485_76_76_104100_72_446760; 1P_JAR=2022-01-11-14; SIDCC=AJi4QfH2f1jP6ZxAgu57N223q8LUYaIJZwH1YdKEni1zwjmtEqYhb3LhzImf86EOON8Qp4Chaw; __Secure-3PSIDCC=AJi4QfEcJOJO2EJb3WqmMy5ZeQGzKAPhF1o7m7ARFlIeo2hLXFpTgB6m5z2SNGZJhuCgQwUN4LfR; NID=511=nIh92D1iormki3qxLQ7_5vRn5p9MoV3vPOXW_hiL3z9Ml3OunD84fRafIDNXoLzmqcfhXCuEY8q_oBlsZhuXUHkFOsZy35T2Y47FUpGBsoGaNacfIL_9U0eiZs5PJQ74BnlI2aT2QjfKqqaw7vbUkNL8LMhXjmRT-Le8qzJM1tWYS33w8PWdZXVa8hszFp3Ou7YO8l2XN18n6NuUbuiZtk87wjgePEUBo3zJCan8Lse1JchM0l7Ws2okbZdRKg",
-        # "origin": "https://www.google.com",
-        # "referer": "https://www.google.com/",
-        # "sec-ch-ua": '" Not;A Brand";v="99", "Google Chrome";v="97", "Chromium";v="97"',
-        # "sec-ch-ua-mobile": "?0",
-        # "sec-ch-ua-platform": '"Windows"',
-        # "sec-fetch-dest": "empty",
-        # "sec-fetch-mode": "cors",
-        # "sec-fetch-site": "same-origin",
-        # "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/97.0.4692.71 Safari/537.36",
-        # "x-goog-ext-190139975-jspb": '["US","ZZ","mWgjRA=="]',
-        # "x-goog-ext-259736195-jspb": '["en-US","US","USD",2,null,[300],null,[[47805254,47805218,45848307,47878017,47872143,47805230,47805250,47805226,47837317,47879090,45847647,4645803,47805238,47805234,45847663,47839141,45847655,47805242,47805258,47805222,47805246]],7,[]]',
-        # "x-same-domain": "1"
     }
 
-    # fData = (
-    #     ('f.req', (None, '[[["H028ib","[\"New Orlean\",[1,2,3,5,4],null,[1,1],1]",null,"generic"]]]'))
-    # )
+    # [[["tDoGIe","[null,[[\"/m/0f2tj\",5]]]",null,"generic"]]]
+    response = requests.post(url=airsites[0],
+                            # params=urlencode(q), # not necessary in this case but can be necessary
+                            data=urlencode(fData),
+                            headers=headers)
 
-    response = requests.post(airsites[0], data=q, json=fData)
-    print(response.content)
     if response.status_code != 200:
-        raise Exception("bad request")
-    
-    return response.content
+        raise Exception("Bad Google Flights from request")
+    fTemp = json.loads(response.text[6:])
+    fCities = json.loads(fTemp[0][2])
+    fCode = fCities[0][0][0][4]
+
+    print(fCode)
+
+    fData['f.req'] = fDataStr.format(location=tLocation)
+    response = requests.post(url=airsites[0],
+                            # params=urlencode(q), # not necessary in this case but can be necessary
+                            data=urlencode(fData),
+                            headers=headers)
+
+    if response.status_code != 200:
+        raise Exception("Bad Google Flights destination request")
+    tTempt = json.loads(response.text[6:])
+    tCities = json.loads(tTempt[0][2])
+    tCode = tCities[0][0][0][4]
+
+    print(tCode)
+
+    url = 'https://www.google.com/_/TravelFrontendUi/data/travel.frontend.flights.FlightsFrontendService/GetShoppingResults'
+    # fData = [[["WR9Xq",fr"[\"{fCode}\",[\"{tCode}\"],\"2022-01-31\",2]",null,"generic"]]]
+
+    fData['f.req'] = fr'[null,"[[null,null],[null,null,1,null,[],1,[1,0,0,0],null,null,null,null,null,null,[[[[[\"{fCode}\",4]]],[[[\"{tCode}\",5]]],null,0,[],[],\"{fDate}\",null,[],[],[],null,null,[]],[[[[\"{tCode}\",5]]],[[[\"{fCode}\",4]]],null,0,[],[],\"{rDate}\",null,[],[],[],null,null,[]]],null,null,null,true,null,null,null,null,null,[],null,null,null,null],1,false,false]"]'
+    response = requests.post(url=url,
+                            data=urlencode(fData),
+                            headers=headers)
+
+    if response.status_code != 200:
+        raise Exception("Bad Google Flights request")
+
+    test = json.loads(response.text[6:])
+    test1 = json.loads(test[0][2])
+    flights = test1[2:]
+
+    # for airline in flights:
+
+
+    print(len(flights[0]))
+
+    # with open('flights.json', 'w') as out:
+    #     s = json.dumps(flights, indent=4)
+    #     out.write(s)
+
+    # print(json.dumps(flights[0], indent=4))
+
+    # return response.content
 
 async def fetchTravelocity():
     #departure:str, destination:str
