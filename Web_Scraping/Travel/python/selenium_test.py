@@ -9,6 +9,7 @@ import os
 import smtplib
 from email.message import EmailMessage
 from dotenv import load_dotenv
+import time
 
 # must include steps on downloading chrome driver and including the path or pointing to it with service
 
@@ -56,33 +57,91 @@ for flight in listings:
     })
 
 driver.get(airBnB)
-try:
-    WebDriverWait(driver, timeout).until(
-        EC.presence_of_element_located((By.CSS_SELECTOR, 'meta[itemprop="name"]'))
-    )
-except TimeoutException:
-    print("Timed out")
+# try:
+#     WebDriverWait(driver, timeout).until(
+#         EC.presence_of_element_located(
+#             (By.CSS_SELECTOR, 'span.r1g2zmv6.dir.dir-ltr'))
+#     )
+# except TimeoutException:
+#     print("Timed out")
+time.sleep(5)
 
 lodgings = driver.find_elements(
     By.CSS_SELECTOR, 'div._8ssblpx')
 
 for lodging in lodgings:
-    rooms_ameneties = lodging.find_elements(By.CSS_SELECTOR, 'div.i4phm33.dir.dir-ltr')
+    rooms_ameneties = lodging.find_elements(
+        By.CSS_SELECTOR, 'div.i4phm33.dir.dir-ltr')
     rooms = rooms_ameneties[0].get_attribute('innerText')
     ameneties = rooms_ameneties[1].get_attribute('innerText')
-    img = lodging.find_element(By.CSS_SELECTOR, 'picture').find_element(By.CSS_SELECTOR, 'source').get_attribute('srcset') # img[:len(img)-3]
-    
+    img = lodging.find_element(By.CSS_SELECTOR, 'picture').find_element(
+        By.CSS_SELECTOR, 'source').get_attribute('srcset')  # img[:len(img)-3]
+
     properties.append({
         "name": lodging.find_element(By.CSS_SELECTOR, 'meta[itemprop="name"]').get_attribute('content'),
         "href": lodging.find_element(By.CSS_SELECTOR, 'meta[itemprop="url"]').get_attribute('content'),
         "price_per": lodging.find_element(By.CSS_SELECTOR, 'span._tyxjp1').get_attribute('innerText'),
         "price_total": lodging.find_element(By.CSS_SELECTOR, 'div._tt122m').get_attribute('innerText'),
         "rooms": rooms,
-        "amentities": ameneties,
+        "amenities": ameneties,
         "rating": lodging.find_element(By.CSS_SELECTOR, 'span.r1g2zmv6.dir.dir-ltr').get_attribute('innerText'),
         "img": img[:len(img)-3]
     })
 
 
+def getAccount(dotenv_path=''):
+    if dotenv_path:
+        load_dotenv(dotenv_path=dotenv_path)
+    else:
+        load_dotenv()
+    return (os.getenv('GM_USERNAME'), os.getenv('GM_PASSWORD'))
+
+
+def emailUpdate(subject, from_email, to_email, password, text, htmlText=''):
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+
+    msg.set_content(text)
+    if htmlText:
+        msg.add_alternative(htmlText, subtype='html')
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(from_email, password)
+        smtp.send_message(msg)
+
+
+username, password = getAccount(dotenv_path='../../.env')
+
+text = 'These are the latest best flights for your trip:\n\n'
+
+for flight in flights:
+    text += f'''
+Airline: {flight['airline']}
+Departure: {flight['departure']}, Duration: {flight['duration']}, Stops: {flight['stops']}
+Price: {flight['price']}
+'''
+
+htmlText = text
+
+for property in properties:
+    text += f'''
+{property['name']}
+{property['rooms']}
+{property['amenities']}
+Price/night: {property['price_per']}, Total: {property['price_total']}
+Rating: {property['rating']}
+'''
+    htmlText += f'''
+{property['name']}
+{property['rooms']}
+{property['amenities']}
+Price/night: {property['price_per']}, Total: {property['price_total']}
+Rating: {property['rating']}
+<img src={property['img']} />
+'''
+emailUpdate('Test', username, 'gdavis12@villanova.edu',
+            password, text, htmlText)
 
 driver.close()
