@@ -1,4 +1,3 @@
-Web_Scraping/javascript/node_modules
-Web_Scraping/.env
+.env
 node_modules
 package-lock.json
