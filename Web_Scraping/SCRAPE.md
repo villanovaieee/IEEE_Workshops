@@ -28,7 +28,7 @@ tools will allow you to select elements on the page. Select the first item on
 the wishlist.
 
 <div style="text-align:center;">
-    <img src="../Images/select_element.gif" width="500" />
+    <img src="../Images/select_element.gif" width="800" />
 </div>
 
 We can now scroll up through the HTML markup to look for the `div` tag that
