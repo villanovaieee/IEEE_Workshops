@@ -78,7 +78,7 @@ async def main():
     # folder: "Web_Scraping/Travel/python/"
     # "./" means current folder, "../" means parent folder
     username, password = getAccount('../../.env')
-    emailUpdate('Wishlist Updates', username, 'gdavis12@villanova.edu',
+    emailUpdate('Wishlist Updates', username, 'your_email@villanova.edu',
                 password, text, htmlText)
 
 
@@ -96,7 +96,7 @@ async def fetchHtml():
     return response.text
 
 # these functions can be found in the "email_python.py" file in the Web_Scraping
-# folder
+# folder with comments on how they work
 
 
 def getAccount(dotenv_path=''):
