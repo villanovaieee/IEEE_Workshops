@@ -1,3 +1,21 @@
+"""
+Copyright 2021 The Villanova Chapter of the Institute of Electrical and
+Electronics Engineers (IEEE)
+This file is part of the IEEE_Workshops library.
+
+The IEEE_Workshops libary is free software: you can redistribute it and/or
+modify it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or (at your
+option) any later version.
+
+The IEEE_Workshops libary is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+the IEEE_Workshops library. If not, see <https://www.gnu.org/licenses/>.
+"""
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -5,6 +23,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+# these imports come from the "email_python.py" file in the Web_Scraping folder
 import os
 import smtplib
 from email.message import EmailMessage
@@ -29,6 +48,9 @@ service = Service(r'C:\Users\davis\chromedriver_win32\chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=options)
 
 driver.get(googleFlights)
+
+# the xpath and CSS selectors used in this code are specific to the urls used
+# you will need to do the work finding the xpath or selectors for your own
 
 timeout = 5
 try:
@@ -57,13 +79,9 @@ for flight in listings:
     })
 
 driver.get(airBnB)
-# try:
-#     WebDriverWait(driver, timeout).until(
-#         EC.presence_of_element_located(
-#             (By.CSS_SELECTOR, 'span.r1g2zmv6.dir.dir-ltr'))
-#     )
-# except TimeoutException:
-#     print("Timed out")
+# the "try except" method used previously is the proper way to await elements on
+# a page, but alternatively you can just use a delay since we're only accessing
+# two web pages
 time.sleep(5)
 
 lodgings = driver.find_elements(
@@ -87,6 +105,9 @@ for lodging in lodgings:
         "rating": lodging.find_element(By.CSS_SELECTOR, 'span.r1g2zmv6.dir.dir-ltr').get_attribute('innerText'),
         "img": img[:len(img)-3]
     })
+
+# You can find these functions (getAccount and emailUpdate) in the
+# email_python.py file in the Web_Scraping folder
 
 
 def getAccount(dotenv_path=''):
@@ -112,8 +133,11 @@ def emailUpdate(subject, from_email, to_email, password, text, htmlText=''):
         smtp.send_message(msg)
 
 
-username, password = getAccount(dotenv_path='../../.env')
-
+# We will build the plain text and rich text (htmlText) to be included in our
+# automatic email
+# Wrapping a string in three quotations in python allows you to actual "enter"
+# between new lines, and prefixing with "f" makes it a formatted string and
+# allows you to use curly braces to include variables in-line
 text = 'These are the latest best flights for your trip:\n\n'
 
 for flight in flights:
@@ -123,9 +147,14 @@ Departure: {flight['departure']}, Duration: {flight['duration']}, Stops: {flight
 Price: {flight['price']}
 '''
 
+text += 'These are the available rooms'
 htmlText = text
 
-for property in properties:
+# if you would prefer to sort the properties by increasing price and email,
+# let's say the top 5, use this for loop:
+# for property in sorted(properties.items(), key=lambda x: x[1])[:5]
+
+for property in sorted(properties.items(), key=lambda x: x[1])[:5]:
     text += f'''
 {property['name']}
 {property['rooms']}
@@ -141,7 +170,14 @@ Price/night: {property['price_per']}, Total: {property['price_total']}
 Rating: {property['rating']}
 <img src={property['img']} />
 '''
-emailUpdate('Test', username, 'gdavis12@villanova.edu',
+
+# you need to include the path to your .env file containing your usernam and
+# password. In my case (relative to the GitHub) my .env file would be in the
+# "Web Scraping" folder so I use "../../" to specify two levels up from this
+# folder: "Web_Scraping/Travel/python/"
+# "./" means current folder, "../" means parent folder
+username, password = getAccount('../../.env')
+emailUpdate('Travel Updates', username, 'gdavis12@villanova.edu',
             password, text, htmlText)
 
 driver.close()
