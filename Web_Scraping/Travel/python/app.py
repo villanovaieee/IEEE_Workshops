@@ -23,6 +23,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+import re
 # these imports come from the "email_python.py" file in the Web_Scraping folder
 import os
 import smtplib
@@ -43,7 +44,8 @@ options = Options()
 options.add_argument('--headless')
 options.add_argument('--log-level=3')
 
-# executable_path is deprecated, use a service
+# you must specify the path to the chromedriver on your system. View the README
+# for instructions on installing the chromedriver
 service = Service(r'C:\Users\davis\chromedriver_win32\chromedriver.exe')
 driver = webdriver.Chrome(service=service, options=options)
 
@@ -102,12 +104,12 @@ for lodging in lodgings:
         "price_total": lodging.find_element(By.CSS_SELECTOR, 'div._tt122m').get_attribute('innerText'),
         "rooms": rooms,
         "amenities": ameneties,
-        "rating": lodging.find_element(By.CSS_SELECTOR, 'span.r1g2zmv6.dir.dir-ltr').get_attribute('innerText'),
         "img": img[:len(img)-3]
     })
 
 # You can find these functions (getAccount and emailUpdate) in the
-# email_python.py file in the Web_Scraping folder
+# email_python.py file in the Web_Scraping folder with comments on how they
+# work
 
 
 def getAccount(dotenv_path=''):
@@ -138,7 +140,7 @@ def emailUpdate(subject, from_email, to_email, password, text, htmlText=''):
 # Wrapping a string in three quotations in python allows you to actual "enter"
 # between new lines, and prefixing with "f" makes it a formatted string and
 # allows you to use curly braces to include variables in-line
-text = 'These are the latest best flights for your trip:\n\n'
+text = 'These are the latest best flights for your trip:\n'
 
 for flight in flights:
     text += f'''
@@ -147,37 +149,41 @@ Departure: {flight['departure']}, Duration: {flight['duration']}, Stops: {flight
 Price: {flight['price']}
 '''
 
-text += 'These are the available rooms'
+text += '\nThese are the available rooms\n'
 htmlText = text
 
 # if you would prefer to sort the properties by increasing price and email,
 # let's say the top 5, use this for loop:
-# for property in sorted(properties.items(), key=lambda x: x[1])[:5]
+# for property in sorted(properties, key=lambda x: x['price_total'])[:5]
 
-for property in sorted(properties.items(), key=lambda x: x[1])[:5]:
+for property in properties:
     text += f'''
 {property['name']}
 {property['rooms']}
 {property['amenities']}
 Price/night: {property['price_per']}, Total: {property['price_total']}
-Rating: {property['rating']}
 '''
     htmlText += f'''
-{property['name']}
+<b>{property['name']}</b>
 {property['rooms']}
 {property['amenities']}
 Price/night: {property['price_per']}, Total: {property['price_total']}
-Rating: {property['rating']}
 <img src={property['img']} />
 '''
+
+# use regular expressions to replace new lines
+# with the <br> tag used in html for line breaks
+# (/n) = match every new line character
+htmlText = re.sub(r'\n', '<br>', htmlText)
 
 # you need to include the path to your .env file containing your usernam and
 # password. In my case (relative to the GitHub) my .env file would be in the
 # "Web Scraping" folder so I use "../../" to specify two levels up from this
 # folder: "Web_Scraping/Travel/python/"
-# "./" means current folder, "../" means parent folder
-username, password = getAccount('../../.env')
-emailUpdate('Travel Updates', username, 'gdavis12@villanova.edu',
+# "./" means current folder, "../" means parent folder. This must be in
+# reference to the folder your terminal is running from
+username, password = getAccount(dotenv_path='../../.env')
+emailUpdate('Travel Updates', username, 'your_email@villanova.edu',
             password, text, htmlText)
 
 driver.close()
