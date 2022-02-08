@@ -18,6 +18,7 @@ the IEEE_Workshops library. If not, see <https://www.gnu.org/licenses/>.
 """
 
 # all of these are standard libraries save dotenv "python-dotenv" and "requests"
+# and "beautifulsoup4"
 import smtplib
 import os
 import re
@@ -31,6 +32,7 @@ from bs4 import BeautifulSoup
 load_dotenv(dotenv_path="../.env")
 wishlist = 'https://www.amazon.com/hz/wishlist/ls/2J6XL0418J2Y9?ref_=wl_share'
 
+
 async def main():
     """
     Extract and email pertinent info from an Amazon wishlist
@@ -38,7 +40,10 @@ async def main():
     html = await fetchHtml()
     soup = BeautifulSoup(html, 'html.parser')
     data = []
- 
+
+    # the content of web pages are expected to change. This code will likely not run
+    # after a period of time. The path to the title, price, and link will need to be
+    # updated
     ul = soup.find(id="g-items")
     for li in ul.find_all("li"):
         title = re.sub(r'\s\s+', '', li.h3.a.string)
@@ -46,33 +51,8 @@ async def main():
         href = f"https://amazon.com{li.h3.a.get('href')}"
 
         data.append({"title": title, "price": price, "href": href})
-    emailUpdate(data)
 
-async def fetchHtml():
-    """
-    Fetch a url and return its html body if there are no errors.
-    Returns
-    -------
-    response.text : str
-        Html body of the fetched page
-    """
-    response = requests.get(wishlist)
-    if response.status_code != 200:
-        raise Exception("Bad request")
-    return response.text
-
-def emailUpdate(data):
-    """
-    Email data collected in the main function
-    Parameters
-    ----------
-    data : dict[]
-        List of dictionaries with title, link, and price of wishlist items
-    """
-    msg = EmailMessage()
-    msg['Subject'] = f'Wishlist Updates {strftime("%a %b %d %Y", gmtime())}'
-    msg['From'] = os.getenv('GM_USERNAME')
-    msg['To'] = os.getenv('GM_RECIPIENT')
+    # format plain and rich text variables for the email
     text = ''
     htmlText = ''
     for item in data:
@@ -87,11 +67,59 @@ def emailUpdate(data):
         {2}
         '''.format(item['href'], item['title'], item['price'])
 
+    # use regular expressions to replace the double spacing
+    # (/s/s+) = new line followed by new line
+    # with the <br> tag used in html for line breaks
+    htmlText = re.sub(r'\s\s+', '<br>', htmlText)
+
+    # you need to include the path to your .env file containing your usernam and
+    # password. In my case (relative to the GitHub) my .env file would be in the
+    # "Web Scraping" folder so I use "../../" to specify two levels up from this
+    # folder: "Web_Scraping/Travel/python/"
+    # "./" means current folder, "../" means parent folder
+    username, password = getAccount('../../.env')
+    emailUpdate('Wishlist Updates', username, 'gdavis12@villanova.edu',
+                password, text, htmlText)
+
+
+async def fetchHtml():
+    """
+    Fetch a url and return its html body if there are no errors.
+    Returns
+    -------
+    response.text : str
+        Html body of the fetched page
+    """
+    response = requests.get(wishlist)
+    if response.status_code != 200:
+        raise Exception("Bad request:", response.status_code)
+    return response.text
+
+# these functions can be found in the "email_python.py" file in the Web_Scraping
+# folder
+
+
+def getAccount(dotenv_path=''):
+    if dotenv_path:
+        load_dotenv(dotenv_path=dotenv_path)
+    else:
+        load_dotenv()
+    return (os.getenv('GM_USERNAME'), os.getenv('GM_PASSWORD'))
+
+
+def emailUpdate(subject, from_email, to_email, password, text, htmlText=''):
+    msg = EmailMessage()
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+
     msg.set_content(text)
-    msg.add_alternative(re.sub(r'\s\s+', '<br>', htmlText), subtype='html')
+    if htmlText:
+        msg.add_alternative(htmlText, subtype='html')
 
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
-        smtp.login(os.getenv('GM_USERNAME'), os.getenv('GM_PASSWORD'))
+        smtp.login(from_email, password)
         smtp.send_message(msg)
+
 
 asyncio.run(main())
