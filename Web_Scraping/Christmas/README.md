@@ -1,4 +1,4 @@
-# Spring Break Planning
+# Christmas Wishlist
 
 This workshop covers automated price updates on an Amazon wishlist
 
