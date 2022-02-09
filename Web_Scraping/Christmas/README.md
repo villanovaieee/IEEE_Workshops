@@ -15,6 +15,30 @@ The email you will receive will look something like the following:
 
 ## Setup
 
+### Wishlist
+
+You must create a **public** Amazon wishlist in order to scrape it. To do so, navigate to your desired wishlist on Amazon and click the **...More** hyperlink.
+
+<div style="text-align:center;">
+    <img src="../../Images/manage_wishlist.png" width="500" />
+</div>
+
+Click the **Manage list** hyperlink and then set the **Privacy** of the list to **Public**.
+
+<div style="text-align:center;">
+    <img src="../../Images/public_wishlist.png" width="500"/>
+</div>
+
+Lastly, click the **Send list to others** hyperlink, click the **VIEW ONLY**
+button and the **Copy link** hyperlink. You know have the link you will fetch
+and scrape!
+
+<div style="text-align:center;">
+    <img src="../../Images/link_wishlist.png" width="500" />
+</div>
+
+### Software
+
 > :exclamation: If you do not have python or NodeJS installed, reference the
 > installation guide in the [INSTALLS.md](../INSTALLS.md) file. Also feel free
 > get a brief background in web scraping through the [SCRAPE.md](../SCRAPE.md)
