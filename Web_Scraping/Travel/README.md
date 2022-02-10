@@ -1,5 +1,7 @@
 # Spring Break Planning
 
+> :movie_camera: Demonstration using Python can be found on [YouTube](https://www.youtube.com/watch?v=yEsqiKR4i0c).
+
 This workshop covers automated spring break planning by web scraping Google
 Flights and airbnb for flights and properties to/at the travel destination of
 your dreams.
