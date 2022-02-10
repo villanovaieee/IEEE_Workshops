@@ -164,7 +164,7 @@ for property in properties:
 Price/night: {property['price_per']}, Total: {property['price_total']}
 '''
     htmlText += f'''
-<b>{property['name']}</b>
+<a href="{property['href']}"><b>{property['name']}</b></a>
 {property['rooms']}
 {property['amenities']}
 Price/night: {property['price_per']}, Total: {property['price_total']}
