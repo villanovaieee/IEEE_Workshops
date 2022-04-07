@@ -1,10 +1,7 @@
 # Villanova Chapter of IEEE Workshops
 
-This repository hosts the files of several of the Villanova Chapter of IEEE's
-workshops. Particularly code based files but also CAD files and guidelines.
-
-Everything here is meant to serve an educational purpose. All subfolders are
-workshop specific with their own outlines and instructions.
+This branch (supporting_materials) is meant to include materials the general
+body does not need but are helpful to exec in running the workshops.
 
 ## License
 
