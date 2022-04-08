@@ -141,7 +141,9 @@ old file and add it to your `.gitignore` file to test.
 We've made changes to the repository, let's add and commit them:
 
 ```bash
-git add . # add all changes (only callable from the root)
+git status # preview state of tracked files (unadded, added, modified, renamed, deleted, etc.)
+git add . # add all changes (can also add specific folders/files)
+git status # verify we added all of the changes (unnecessary, but good practice)
 git commit -m "project initialized"
 ```
 
