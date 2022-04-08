@@ -15,12 +15,5 @@ View install options in [`INSTALL.md`](./INSTALL.md).
 
 ## GitHub Setup
 
-Sign up for an account on [github.com](https://github.com/).
-
-Configure your local git environment with the info of the account you just
-established. If on Windows ensure you are using Git Bash
-
-```bash
-git config --global user.name "<GitHub Username>"
-git config --global user.email "<GitHub Email>"
-```
+View steps to setting up your GitHub account and linking it to your local git
+environment using SSH in [`GITHUB.md`](./GITHUB.md).
