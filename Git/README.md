@@ -17,3 +17,8 @@ View install options in [`INSTALL.md`](./INSTALL.md).
 
 View steps to setting up your GitHub account and linking it to your local git
 environment using SSH in [`GITHUB.md`](./GITHUB.md).
+
+## Creating a Repository
+
+Steps to create and manage a repository are contained in
+[`REPOSITORY.md`](./REPOSITORY.md).

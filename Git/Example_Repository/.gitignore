@@ -1,0 +1,11 @@
+# This ignores all folders called node_modules
+node_modules
+
+# This ignores only the node_modules folder in the root of the project
+/node_modules
+
+# This ignores all package-lock.json files
+package-lock.json
+
+# This ignores only the one in the root of the project
+/package-lock.json
